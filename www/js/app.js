@@ -25,6 +25,9 @@ angular.module('starter', ['ionic', 'ngCordova'])
 		});
 	})
 	.controller('myController', ['$scope', '$cordovaFile', '$cordovaFileTransfer', function ($scope, $cordovaFile, $cordovaFileTransfer) {
+
+		$scope.server = "http://10.1.236.62:8080/bos-web/uploadAction";
+
 		$scope.makeCrash = function () {
 			cordova.plugins.AppCrash.crash(
 				"crash",
@@ -35,6 +38,9 @@ angular.module('starter', ['ionic', 'ngCordova'])
 				}
 			);
 		};
+
+		$scope.readCrash = function () {
+		}
 
 		$scope.sendCrash = function () {
 			var crashFolderPath;
@@ -50,12 +56,17 @@ angular.module('starter', ['ionic', 'ngCordova'])
 			window.resolveLocalFileSystemURL(crashFolderPath, function (dirEntry) {
 				var directoryReader = dirEntry.createReader();
 				directoryReader.readEntries(function (result) {
+					var log_count = 0;
+					//由于iosDocuments目录下含非log日志
 					if (result && result.length > 0) {
 						angular.forEach(result, function (file) {
-							upload(file.nativeURL, file.fullPath, dirPath);
+							if (file.nativeURL.endsWith(".log")) {
+								upload(file.nativeURL);
+								log_count++;
+							}
 						})
-					} else {
-						alert("无可上传日志文件");
+					} else if (log_count === 0) {
+						alert("无可上传崩溃日志");
 					}
 				}, function (reason) {
 					console.debug("reason---" + JSON.stringify(reason));
@@ -64,19 +75,22 @@ angular.module('starter', ['ionic', 'ngCordova'])
 		}
 
 
-		function upload(filePath, crashPath, dirPath) {
+		function upload(filePath) {
+			console.debug("upload..");
 			//上传日志文件 流方式
-			var server = "http://10.1.236.62:8080/bos-web/uploadAction";
-			$cordovaFileTransfer.upload(server, filePath, null, true)
+			$cordovaFileTransfer.upload($scope.server, filePath, null, true)
 				.then(function (result) {
 					if (result.response === "success") {
 						//上传成功，删除本地文件
-						$cordovaFile.removeFile(dirPath, crashPath)
-							.then(function () {
-								console.debug("日志文件删除成功");
+						window.resolveLocalFileSystemURL(filePath, function (fileEntry) {
+							fileEntry.remove(function () {
+								console.log('delete success');
+							}, function (err) {
+								console.error(err);
 							}, function () {
-								console.debug("日志文件删除失败");
+								console.log('file not exist');
 							});
+						})
 					} else {
 						alert("日志文件上传失败");
 					}
