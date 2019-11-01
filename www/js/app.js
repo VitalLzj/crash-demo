@@ -36,61 +36,54 @@ angular.module('starter', ['ionic', 'ngCordova'])
 			);
 		};
 
-		$scope.readCrash = function () {
-			if (ionic.Platform.isAndroid()) {
-				//获取sdcard目录
-				var sdcardPath = cordova.file.externalRootDirectory;
-				//日志文件路径
-				var crashPath = "crash/shuto-crash.log";
-				//检测日志文件是否存在
-				$cordovaFile.checkFile(sdcardPath, crashPath).then(function () {
-					//读取日志文件
-					$cordovaFile.readAsText(sdcardPath, crashPath).then(function (result) {
-						$scope.crashLog = result;
-					}, function (err) {
-						$scope.crashLog = "err--" + "\n" + err;
-					})
-				}, function () {
-					alert("暂无日志文件");
-				})
-			} else {
-				alert("ios 暂不支持");
-			}
-		};
-
 		$scope.sendCrash = function () {
+			var crashFolderPath;
+			var dirPath;
+			//获取日志文件夹
 			if (ionic.Platform.isAndroid()) {
-				//获取sdcard目录
-				var sdcardPath = cordova.file.externalRootDirectory;
-				//日志文件路径
-				var crashPath = "crash/shuto-crash.log";
-				//检测日志文件是否存在
-				$cordovaFile.checkFile(sdcardPath, crashPath).then(function () {
-					//上传日志文件 流方式
-					var server = "http://192.168.0.112:8080/bos-web/uploadAction";
-					var filePath = sdcardPath + crashPath;
-					$cordovaFileTransfer.upload(server, filePath, null, true)
-						.then(function (result) {
-							if (result.response === "success") {
-								//上传成功，删除本地文件
-								$cordovaFile.removeFile(sdcardPath, crashPath)
-									.then(function () {
-										alert("日志文件删除成功");
-									}, function () {
-										alert("日志文件删除失败");
-									});
-							} else {
-								alert("日志文件上传失败");
-							}
-						}, function (err) {
-							console.debug("err---" + JSON.stringify(err));
-						}, function (progress) {
-						});
-				}, function () {
-					alert("暂无日志文件");
-				})
+				dirPath = cordova.file.externalRootDirectory;
+				crashFolderPath = cordova.file.externalRootDirectory + "crash";
 			} else {
-				alert("ios 暂不支持");
+				dirPath = cordova.file.applicationStorageDirectory;
+				crashFolderPath = cordova.file.applicationStorageDirectory + "Documents";
 			}
+			window.resolveLocalFileSystemURL(crashFolderPath, function (dirEntry) {
+				var directoryReader = dirEntry.createReader();
+				directoryReader.readEntries(function (result) {
+					if (result && result.length > 0) {
+						angular.forEach(result, function (file) {
+							upload(file.nativeURL, file.fullPath, dirPath);
+						})
+					} else {
+						alert("无可上传日志文件");
+					}
+				}, function (reason) {
+					console.debug("reason---" + JSON.stringify(reason));
+				})
+			})
 		}
+
+
+		function upload(filePath, crashPath, dirPath) {
+			//上传日志文件 流方式
+			var server = "http://10.1.236.62:8080/bos-web/uploadAction";
+			$cordovaFileTransfer.upload(server, filePath, null, true)
+				.then(function (result) {
+					if (result.response === "success") {
+						//上传成功，删除本地文件
+						$cordovaFile.removeFile(dirPath, crashPath)
+							.then(function () {
+								console.debug("日志文件删除成功");
+							}, function () {
+								console.debug("日志文件删除失败");
+							});
+					} else {
+						alert("日志文件上传失败");
+					}
+				}, function (err) {
+					console.debug("err---" + JSON.stringify(err));
+				}, function (progress) {
+				});
+		}
+
 	}]);
