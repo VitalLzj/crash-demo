@@ -99,7 +99,7 @@
     <plugin name="cordova-plugin-splashscreen" spec="5.0.2" />
     <plugin name="cordova-plugin-ionic-webview" spec="^4.0.0" />
     <plugin name="cordova-plugin-ionic-keyboard" spec="^2.0.5" />
-    <plugin name="cordova-app-crash" spec="https://github.com/AhsanAyaz/cordova-app-crash" />
+    <plugin name="cordova-app-crash" spec="https://github.com/shuto-cn/CrashLog.git" />
     <plugin name="crash-log-cordova-plugin" spec="https://github.com/VitalLzj/CrashLog.git" />
     <engine name="android" spec="^7.1.4" />
 </widget>
