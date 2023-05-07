@@ -3,15 +3,15 @@
   "version": "0.0.1",
   "description": "An Ionic project",
   "devDependencies": {
-    "@ionic/v1-toolkit": "^1.0.0",
-    "gulp": "^3.5.6",
+    "@ionic/v1-toolkit": "^3.2.20",
+    "gulp": "^4.0.2",
     "gulp-clean-css": "^3.7.0",
     "gulp-rename": "^1.2.0",
     "gulp-sass": "^3.1.0"
   },
   "dependencies": {
     "cordova": "^9.0.0",
-    "cordova-android": "^7.1.4",
+    "cordova-android": "^11.0.0",
     "cordova-app-crash": "git+https://github.com/AhsanAyaz/cordova-app-crash.git",
     "cordova-plugin-device": "^2.0.2",
     "cordova-plugin-file": "^6.0.2",
